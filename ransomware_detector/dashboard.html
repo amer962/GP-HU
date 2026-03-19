@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RansomShield</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh}
+.sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;background:#161b22;border-right:1px solid #30363d;padding:24px 0}
+.logo{display:flex;align-items:center;gap:10px;padding:0 20px 20px}
+.logo-icon{width:36px;height:36px;background:#1f6feb;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-text{font-size:15px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;color:#8b949e;transition:.15s;font-size:14px;border-left:2px solid transparent}
+.nav-item:hover{background:#1c2128;color:#e6edf3}
+.nav-item.active{background:#1c2128;color:#e6edf3;border-left-color:#1f6feb}
+.main{margin-left:220px;padding:28px}
+.page{display:none}.page.active{display:block}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.page-title{font-size:20px;font-weight:600}
+.btn{padding:8px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:500;transition:.15s}
+.btn-green{background:#238636;color:#fff}.btn-green:hover{background:#2ea043}
+.btn-blue{background:#1f6feb;color:#fff}.btn-blue:hover{background:#388bfd}
+.btn-gray{background:#21262d;color:#e6edf3;border:1px solid #30363d}.btn-gray:hover{background:#30363d}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:20px}
+.card-num{font-size:32px;font-weight:700;margin-bottom:4px}
+.card-label{font-size:12px;color:#8b949e}
+.red{color:#f85149}.green{color:#3fb950}.amber{color:#d29922}.blue{color:#58a6ff}
+.panel{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:20px;margin-bottom:20px}
+.panel-title{font-size:14px;font-weight:600;margin-bottom:16px}
+.shield-wrap{display:flex;align-items:center;gap:24px;padding:8px 0}
+.shield{font-size:64px;line-height:1}
+.shield-status{font-size:22px;font-weight:700}
+.shield-sub{font-size:13px;color:#8b949e;margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;color:#8b949e;font-weight:500;border-bottom:1px solid #30363d}
+td{padding:10px 12px;border-bottom:1px solid #21262d}
+tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500}
+.badge-red{background:#3d0000;color:#f85149}
+.badge-amber{background:#2d1d00;color:#d29922}
+.badge-green{background:#0d2a0d;color:#3fb950}
+.log-box{background:#0d1117;border-radius:6px;padding:14px;font-family:Consolas,monospace;font-size:12px;max-height:360px;overflow-y:auto;line-height:2}
+.log-threat{color:#f85149}.log-warn{color:#d29922}.log-ok{color:#3fb950}.log-muted{color:#484f58}
+input,textarea{background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;padding:8px 12px;font-size:13px;width:100%;outline:none}
+input:focus,textarea:focus{border-color:#1f6feb}
+textarea{font-family:Consolas,monospace;resize:vertical;min-height:90px}
+.result-box{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:16px;margin-top:16px;display:none}
+.conf-bar-wrap{background:#21262d;border-radius:4px;height:8px;margin:10px 0;overflow:hidden}
+.conf-bar{height:8px;border-radius:4px;transition:width .5s;width:0}
+.divider{height:1px;background:#21262d;margin:14px 0}
+code{background:#21262d;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">🛡</div>
+    <span class="logo-text">RansomShield</span>
+  </div>
+  <div class="nav-item active" onclick="showPage('dashboard',this)">⬡ &nbsp;Dashboard</div>
+  <div class="nav-item" onclick="showPage('analyze',this)">⌕ &nbsp;Analyze</div>
+  <div class="nav-item" onclick="showPage('events',this)">≡ &nbsp;Events</div>
+  <div class="nav-item" onclick="showPage('about',this)">ℹ &nbsp;About</div>
+</div>
+
+<div class="main">
+
+  <!-- Dashboard -->
+  <div class="page active" id="page-dashboard">
+    <div class="topbar">
+      <span class="page-title">Dashboard</span>
+      <button class="btn btn-green" onclick="runSimulation()">▶ Run WannaCry Simulation</button>
+    </div>
+
+    <div class="panel">
+      <div class="shield-wrap">
+        <div class="shield" id="shield-icon">🛡️</div>
+        <div>
+          <div class="shield-status green" id="shield-status">Protected</div>
+          <div class="shield-sub">MLRan Model · 98.15% accuracy · 483 behavioral features</div>
+          <div class="shield-sub" style="margin-top:4px">Logistic Regression · 64 ransomware families · 2006–2024</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card"><div class="card-num red" id="stat-killed">0</div><div class="card-label">Threats Killed</div></div>
+      <div class="card"><div class="card-num amber" id="stat-suspicious">0</div><div class="card-label">Suspicious</div></div>
+      <div class="card"><div class="card-num green" id="stat-safe">0</div><div class="card-label">Safe</div></div>
+      <div class="card"><div class="card-num blue" id="stat-checked">0</div><div class="card-label">Total Checked</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Recent Events</div>
+      <table>
+        <thead><tr><th>Time</th><th>Process</th><th>PID</th><th>Confidence</th><th>Verdict</th><th>Top Features</th></tr></thead>
+        <tbody id="events-tbody">
+          <tr><td colspan="6" style="color:#484f58;text-align:center;padding:24px">No events yet — click "Run WannaCry Simulation" to test</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Analyze -->
+  <div class="page" id="page-analyze">
+    <div class="topbar">
+      <span class="page-title">Analyze Process</span>
+      <button class="btn btn-gray" onclick="fillExample()">Fill WannaCry Example</button>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Enter Process Behavior</div>
+      <div style="display:flex;gap:12px;margin-bottom:12px">
+        <div style="flex:1"><div style="font-size:12px;color:#8b949e;margin-bottom:6px">Process Name</div><input id="in-name" placeholder="suspicious.exe"></div>
+        <div style="width:110px"><div style="font-size:12px;color:#8b949e;margin-bottom:6px">PID</div><input id="in-pid" placeholder="1234" type="number"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><div style="font-size:12px;color:#8b949e;margin-bottom:6px">API Calls (one per line)</div><textarea id="in-api" placeholder="NtProtectVirtualMemory&#10;CryptEncrypt&#10;NtAllocateVirtualMemory"></textarea></div>
+        <div><div style="font-size:12px;color:#8b949e;margin-bottom:6px">Registry Written (one per line)</div><textarea id="in-reg" placeholder="HKEY_CURRENT_USER\Software\..."></textarea></div>
+        <div><div style="font-size:12px;color:#8b949e;margin-bottom:6px">Files Written (one per line)</div><textarea id="in-files" placeholder="c:\users\user\doc.wncry"></textarea></div>
+        <div><div style="font-size:12px;color:#8b949e;margin-bottom:6px">Signatures (one per line)</div><textarea id="in-sigs" placeholder="allocates_rwx&#10;packer_entropy"></textarea></div>
+        <div><div style="font-size:12px;color:#8b949e;margin-bottom:6px">DLLs Loaded (one per line)</div><textarea id="in-dlls" placeholder="advapi32&#10;cryptsp"></textarea></div>
+        <div><div style="font-size:12px;color:#8b949e;margin-bottom:6px">Strings (one per line)</div><textarea id="in-strings" placeholder="kernel32.dll&#10;delete"></textarea></div>
+      </div>
+      <button class="btn btn-blue" onclick="analyzeProcess()" style="width:100%;margin-top:14px;padding:11px;font-size:14px">Analyze</button>
+
+      <div class="result-box" id="result-box">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="font-size:44px" id="res-icon">🟢</div>
+          <div>
+            <div style="font-size:22px;font-weight:700" id="res-verdict">SAFE</div>
+            <div style="font-size:13px;color:#8b949e" id="res-name"></div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div style="font-size:30px;font-weight:700" id="res-conf">0%</div>
+            <div style="font-size:12px;color:#8b949e">confidence</div>
+          </div>
+        </div>
+        <div class="conf-bar-wrap"><div class="conf-bar" id="res-bar"></div></div>
+        <div class="divider"></div>
+        <div style="font-size:12px;color:#8b949e;margin-bottom:8px">Triggered Features</div>
+        <div id="res-features" style="font-family:Consolas,monospace;font-size:12px;line-height:2;color:#8b949e"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Events -->
+  <div class="page" id="page-events">
+    <div class="topbar">
+      <span class="page-title">Event Log</span>
+      <button class="btn btn-gray" onclick="document.getElementById('full-log').innerHTML='<span class=log-muted>[system] Log cleared</span>'">Clear</button>
+    </div>
+    <div class="panel">
+      <div class="log-box" id="full-log"><span class="log-muted">[system] RansomShield running — waiting for events...</span></div>
+    </div>
+  </div>
+
+  <!-- About -->
+  <div class="page" id="page-about">
+    <div class="topbar"><span class="page-title">About</span></div>
+    <div class="panel">
+      <div class="panel-title">RansomShield</div>
+      <p style="color:#8b949e;font-size:14px;line-height:1.8;margin-bottom:14px">AI-powered behavioral ransomware detection. Detects threats based on what they <em>do</em>, not what they look like — enabling zero-day detection.</p>
+      <div class="divider"></div>
+      <table>
+        <tr><td style="color:#8b949e;width:180px">Model</td><td>Logistic Regression</td></tr>
+        <tr><td style="color:#8b949e">Accuracy</td><td class="green">98.15%</td></tr>
+        <tr><td style="color:#8b949e">Features</td><td>483 behavioral features (RFE-selected)</td></tr>
+        <tr><td style="color:#8b949e">Training samples</td><td>4,880+</td></tr>
+        <tr><td style="color:#8b949e">Ransomware families</td><td>64</td></tr>
+        <tr><td style="color:#8b949e">Dataset coverage</td><td>2006 — 2024</td></tr>
+        <tr><td style="color:#8b949e">Kill threshold</td><td class="red">90% confidence</td></tr>
+        <tr><td style="color:#8b949e">Warn threshold</td><td class="amber">70% confidence</td></tr>
+      </table>
+      <div class="divider"></div>
+      <div style="font-size:12px;color:#484f58">Dataset: MLRan · Onwuegbuche et al. (2025) · arXiv:2505.18613</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">API Endpoints</div>
+      <table>
+        <tr><th>Endpoint</th><th>Method</th><th>Description</th></tr>
+        <tr><td><code>/</code></td><td>GET</td><td>This dashboard</td></tr>
+        <tr><td><code>/health</code></td><td>GET</td><td>Health check</td></tr>
+        <tr><td><code>/predict</code></td><td>POST</td><td>Analyze process behavior</td></tr>
+        <tr><td><code>/simulate</code></td><td>POST</td><td>WannaCry simulation</td></tr>
+        <tr><td><code>/stats</code></td><td>GET</td><td>Live stats + events</td></tr>
+        <tr><td><code>/docs</code></td><td>GET</td><td>Swagger UI</td></tr>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  el.classList.add('active');
+}
+
+async function refreshStats() {
+  try {
+    const d = await (await fetch('/stats')).json();
+    document.getElementById('stat-killed').textContent     = d.killed;
+    document.getElementById('stat-suspicious').textContent = d.suspicious;
+    document.getElementById('stat-safe').textContent       = d.safe;
+    document.getElementById('stat-checked').textContent    = d.checked;
+
+    if (d.recent_events && d.recent_events.length > 0) {
+      document.getElementById('events-tbody').innerHTML = d.recent_events.map(e => {
+        const badge = e.verdict==='ransomware'
+          ? '<span class="badge badge-red">RANSOMWARE</span>'
+          : e.verdict==='suspicious'
+          ? '<span class="badge badge-amber">SUSPICIOUS</span>'
+          : '<span class="badge badge-green">SAFE</span>';
+        const col = e.confidence>90?'#f85149':e.confidence>70?'#d29922':'#3fb950';
+        return `<tr>
+          <td style="color:#8b949e">${e.time}</td>
+          <td>${e.name}</td>
+          <td style="color:#8b949e">${e.pid}</td>
+          <td style="color:${col}">${e.confidence}%</td>
+          <td>${badge}</td>
+          <td style="color:#8b949e;font-size:11px">${(e.features||[]).slice(0,2).join(', ')}</td>
+        </tr>`;
+      }).join('');
+
+      document.getElementById('full-log').innerHTML = d.recent_events.map(e => {
+        const cls = e.verdict==='ransomware'?'log-threat':e.verdict==='suspicious'?'log-warn':'log-ok';
+        return `<div class="${cls}">[${e.time}] ${e.verdict.toUpperCase()} | PID=${e.pid} ${e.name} | ${e.confidence}% | ${(e.features||[]).slice(0,3).join(', ')}</div>`;
+      }).join('');
+    }
+  } catch(e) {}
+}
+setInterval(refreshStats, 3000);
+refreshStats();
+
+async function runSimulation() {
+  const status = document.getElementById('shield-status');
+  status.textContent = 'Simulating WannaCry...';
+  status.className   = 'shield-status amber';
+  const d = await (await fetch('/simulate', {method:'POST'})).json();
+  if (d.verdict==='ransomware') {
+    status.textContent = `THREAT BLOCKED — ${(d.confidence*100).toFixed(1)}% confidence`;
+    status.className   = 'shield-status green';
+  }
+  refreshStats();
+}
+
+function lines(id) {
+  return document.getElementById(id).value.split('\n').map(s=>s.trim()).filter(Boolean);
+}
+
+async function analyzeProcess() {
+  const d = await (await fetch('/predict', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      pid: parseInt(document.getElementById('in-pid').value)||0,
+      process_name: document.getElementById('in-name').value||'unknown',
+      api_calls:   lines('in-api'),  reg_written: lines('in-reg'),
+      file_written:lines('in-files'),signatures:  lines('in-sigs'),
+      dlls_loaded: lines('in-dlls'), strings:     lines('in-strings'),
+    })
+  })).json();
+
+  const box = document.getElementById('result-box');
+  box.style.display = 'block';
+  document.getElementById('res-name').textContent = `${d.process_name} (PID: ${d.pid})`;
+  document.getElementById('res-conf').textContent = `${(d.confidence*100).toFixed(1)}%`;
+
+  const colors = {ransomware:'#f85149', suspicious:'#d29922', safe:'#3fb950'};
+  const icons  = {ransomware:'🔴', suspicious:'🟡', safe:'🟢'};
+  const col    = colors[d.verdict] || '#3fb950';
+
+  document.getElementById('res-icon').textContent    = icons[d.verdict];
+  document.getElementById('res-verdict').textContent = d.verdict.toUpperCase();
+  document.getElementById('res-verdict').style.color = col;
+  document.getElementById('res-bar').style.cssText   = `width:${(d.confidence*100).toFixed(0)}%;background:${col}`;
+  document.getElementById('res-features').innerHTML  = d.triggered_features.length
+    ? d.triggered_features.map(f=>`<div>✓ ${f}</div>`).join('')
+    : '<span style="color:#484f58">No matching features</span>';
+
+  refreshStats();
+}
+
+function fillExample() {
+  document.getElementById('in-name').value   = 'wannacry.exe';
+  document.getElementById('in-pid').value    = '4823';
+  document.getElementById('in-api').value    = 'NtProtectVirtualMemory\nCreateProcessInternalW\nNtAllocateVirtualMemory\nNtOpenProcess\nCryptAcquireContextW\nCryptCreateHash\nProcess32NextW\nRegSetValueExW\nNtDelayExecution';
+  document.getElementById('in-reg').value    = 'HKEY_CURRENT_USER\\Software\\WannaCrypt0r\nHKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\WannaCry';
+  document.getElementById('in-files').value  = 'c:\\users\\admin\\documents\\report.wncry';
+  document.getElementById('in-sigs').value   = 'allocates_rwx\nantisandbox_foregroundwindows';
+  document.getElementById('in-dlls').value   = 'advapi32\ncryptsp\nkernel32';
+  document.getElementById('in-strings').value= 'kernel32.dll\ndelete\nuser32';
+}
+</script>
+</body>
+</html>
