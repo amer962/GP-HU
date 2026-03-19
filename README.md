@@ -1,123 +1,119 @@
-# 🛡️ RansomShield — Behavioral Ransomware Detection System
+# 🛡️ RansomShield
 
-> An AI-powered ransomware detection and response system that identifies threats based on **behavior**, not signatures — capable of catching zero-day attacks.
+**AI-powered ransomware detection that stops threats based on behavior — not signatures.**
 
----
+Built on the [MLRan dataset](https://github.com/faithfulco/mlran) — 4,880+ real ransomware samples across 64 families, spanning 2006–2024.
 
-## Overview
-
-RansomShield is a behavioral ransomware detection system built on the **MLRan dataset** — the largest open-source behavioral dataset for ransomware research.
-
-- **Detection Accuracy:** 98.15%
-- **Training Samples:** 4,880+ samples across 64 ransomware families
-- **Features:** 483 behavioral features selected via Mutual Information + RFE
-- **Model:** Logistic Regression
-- **Dataset Coverage:** 2006 — 2024
+> 98.15% detection accuracy | 483 behavioral features | Catches zero-day attacks
 
 ---
 
 ## How It Works
 
+Instead of matching file signatures like traditional antivirus, RansomShield watches *what a process actually does* — API calls, registry modifications, file operations, network activity. If the behavior matches ransomware patterns, it kills the process before it can finish encrypting your files.
+
 ```
-Running Process
+Process Running
       ↓
-Behavioral Monitoring (API calls, Registry, Files, Network)
+Collect behavior (API calls, registry, files, network)
       ↓
-Extract 483 Behavioral Features
+Extract 483 features → ML Model
       ↓
-ML Model → Confidence Score
-      ↓
-< 70%  → Safe
-70-90% → Suspicious (enhanced monitoring)
-> 90%  → Ransomware → Kill Chain activated
+< 70%  →  Safe, ignore
+70–90% →  Suspicious, monitor closely
+> 90%  →  Ransomware → Kill immediately
                 ↓
-    1. Freeze process immediately
-    2. Block network access
-    3. Memory dump for forensics
-    4. Terminate process + children
-    5. Restore affected files (Rollback)
+        1. Freeze process
+        2. Cut network access
+        3. Save memory dump
+        4. Terminate process
+        5. Restore any encrypted files
 ```
 
 ---
 
-## Project Structure
+## Quick Start
 
+### Option A — Docker (Recommended)
+
+No Python setup needed. Just Docker.
+
+```bash
+git clone https://github.com/YOUR_USERNAME/RansomShield.git
+cd RansomShield/ransomware_detector
+docker-compose up -d
 ```
-RansomShield/
-│
-├── ransomware_detector/
-│   ├── gui.py                     # Graphical user interface
-│   ├── step1_train_model.py       # Train model from MLRan data
-│   ├── step2_feature_extractor.py # Convert behavior to feature vector
-│   ├── step3_monitor.py           # Live process monitor
-│   ├── step4_kill_chain.py        # Detection + automatic termination
-│   ├── step5_main.py              # CLI entry point
-│   ├── step6_file_guard.py        # Copy-on-Write + Rollback
-│   ├── step7_decompiler.py        # AI-powered forensic decompiler
-│   ├── build_exe.py               # Build standalone .exe
-│   └── models/                    # Pre-trained model (ready to use)
-│       ├── mlran_model.pkl
-│       ├── feature_cols.json
-│       └── feature_names.json
-│
-└── mlran-main/                    # MLRan dataset
-    └── 6_experiments/
-        └── FS_MLRan_Datasets/
-            ├── MLRan_X_train_RFE.csv
-            ├── MLRan_X_test_RFE.csv
-            └── RFE_selected_feature_names_dic.json
+
+API is now running at `http://localhost:8000`
+
+Check it's working:
+```bash
+curl http://localhost:8000/health
+# {"status": "ok", "model": "LogisticRegression", "features": 483}
+```
+
+Browse the interactive API docs:
+```
+http://localhost:8000/docs
 ```
 
 ---
 
-## Installation & Usage
+### Option B — Run Locally (Windows)
 
-### Requirements
-- Python 3.9+
-- Windows 10/11
-- Administrator privileges
+**Requirements:** Python 3.9+, Windows 10/11, Administrator privileges
 
-### 1. Install dependencies
+**1. Install dependencies**
 ```cmd
-pip install scikit-learn pandas numpy joblib psutil pywin32 watchdog
+pip install scikit-learn pandas numpy joblib psutil pywin32 watchdog fastapi uvicorn
 ```
 
-### 2. Train the model
+**2. Train the model**
 ```cmd
 cd ransomware_detector
 set MLRAN_PATH=..\mlran-main
 py step1_train_model.py
 ```
 
-### 3. Launch GUI
+Expected output:
+```
+Train: (3905, 483) — goodware=2040, ransomware=1865
+Accuracy: 98.15%
+✅ Model saved to models/
+```
+
+**3. Run the GUI**
 ```cmd
 py gui.py
 ```
 
-### 4. Or run from CLI
+**4. Or run from terminal**
 ```cmd
-py step5_main.py             # Full monitoring with Kill Chain
-py step5_main.py --simulate  # Safe simulation (no real malware needed)
+py step5_main.py            # Full monitoring with kill chain
+py step5_main.py --simulate # Safe test — no real malware needed
 ```
 
-### 5. Build standalone .exe
+---
+
+### Option C — Build a standalone .exe
+
 ```cmd
 pip install pyinstaller
 py build_exe.py
 ```
-Output: `dist\RansomShield\RansomShield.exe`
+
+Output: `dist\RansomShield\RansomShield.exe` — copy the whole folder, double-click to run.
 
 ---
 
-## Testing
+## Testing Without Real Malware
 
-### Safe simulation (no malware required)
+Run the built-in simulation — it replays real WannaCry behavior from the dataset:
+
 ```cmd
 py step5_main.py --simulate
 ```
-Simulates real WannaCry behavior using actual dataset samples.
 
-Expected output:
 ```
 Result: 🔴 RANSOMWARE
 Confidence: 88.26%
@@ -125,23 +121,109 @@ Triggered features:
   ✓ API:NtProtectVirtualMemory
   ✓ API:NtAllocateVirtualMemory
   ✓ SIGNATURE:allocates_rwx
+  ✓ API:RegSetValueExW
   ...
 
-Safe process result: 🟢 SAFE — Confidence: 10.70%
+Safe process (notepad): 🟢 SAFE — Confidence: 10.70%
 ```
 
-### Using RanSim (simulates 22 ransomware types)
+For more realistic testing, use [RanSim](https://github.com/lawndoc/RanSim) inside a VM.
+
+---
+
+## VM + Docker Setup (Best for Lab Testing)
+
+This is the recommended setup for safely testing against real ransomware samples:
+
 ```
-github.com/lawndoc/RanSim
+Your Machine                      VM (isolated)
+┌──────────────────┐              ┌─────────────────┐
+│  Docker          │              │                 │
+│  ┌────────────┐  │  HTTP :8000  │  vm_client.py   │
+│  │ RansomShield│◄──────────────│  monitors procs │
+│  │    API     │  │              │  sends behavior │
+│  └────────────┘  │              │                 │
+└──────────────────┘              └─────────────────┘
 ```
 
-### Inside a VM (recommended for real samples)
-1. Launch VirtualBox or Windows Sandbox
-2. Take a Snapshot before testing
-3. Start RansomShield and enable protection
-4. Run RanSim or a real sample
-5. Observe detection results
-6. Restore Snapshot when done
+**On your machine — start the API:**
+```cmd
+docker-compose up -d
+```
+
+**Inside the VM — install and run the client:**
+```cmd
+pip install psutil requests
+set RANSOMSHIELD_API=http://YOUR_HOST_IP:8000
+py vm_client.py
+```
+
+Find your host IP with `ipconfig` — look for IPv4 Address.
+
+---
+
+## Project Structure
+
+```
+ransomware_detector/
+├── api.py                      # REST API (FastAPI)
+├── gui.py                      # Desktop GUI
+├── vm_client.py                # Client to run inside VM
+├── step1_train_model.py        # Train model from MLRan data
+├── step2_feature_extractor.py  # Behavior → 483 feature vector
+├── step3_monitor.py            # Live process monitor
+├── step4_kill_chain.py         # Detection + kill logic
+├── step5_main.py               # CLI entry point
+├── step6_file_guard.py         # File backup + rollback
+├── step7_decompiler.py         # Post-detection EXE analysis
+├── build_exe.py                # Build standalone .exe
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+├── requirements_api.txt
+└── models/
+    ├── mlran_model.pkl         # Pre-trained model (ready to use)
+    ├── feature_cols.json       # Feature column order
+    └── feature_names.json      # Feature ID → name mapping
+```
+
+---
+
+## API Reference
+
+**POST** `/predict` — Analyze a process
+
+```json
+{
+  "pid": 1234,
+  "process_name": "suspicious.exe",
+  "api_calls": ["NtProtectVirtualMemory", "CryptEncrypt"],
+  "reg_written": ["HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\malware"],
+  "file_written": ["c:\\users\\user\\documents\\report.docx"],
+  "dlls_loaded": ["advapi32", "cryptsp"],
+  "signatures": ["allocates_rwx"],
+  "strings": ["kernel32.dll", "delete"]
+}
+```
+
+Response:
+```json
+{
+  "pid": 1234,
+  "process_name": "suspicious.exe",
+  "confidence": 0.9423,
+  "verdict": "ransomware",
+  "triggered_features": [
+    "API:NtProtectVirtualMemory",
+    "API:CryptEncrypt",
+    "SIGNATURE:allocates_rwx"
+  ]
+}
+```
+
+**GET** `/health` — Check API status
+
+**GET** `/docs` — Interactive Swagger UI
 
 ---
 
@@ -150,78 +232,50 @@ github.com/lawndoc/RanSim
 | Metric | Value |
 |--------|-------|
 | Accuracy | 98.15% |
-| Precision (Ransomware) | 97% |
-| Recall (Ransomware) | 99% |
+| Precision | 97% |
+| Recall | 99% |
 | F1-Score | 98% |
-| False Positives | 12 / 975 |
-| False Negatives | 6 / 975 |
+| False Positives | 12 / 975 test samples |
+| False Negatives | 6 / 975 test samples |
+
+Top features driving detection:
+```
+[+2.60]  STRING: "this program cannot be run in dos mode"
+[+1.71]  API: LdrGetProcedureAddress
+[+1.34]  API: NtAllocateVirtualMemory
+[+1.28]  SIGNATURE: packer_entropy
+[+0.98]  SIGNATURE: allocates_rwx
+```
 
 ---
 
-## Behavioral Features (483 total)
+## Extra Features
 
-| Category | Count | Examples |
-|----------|-------|---------|
-| STRING | 223 | Strings extracted from process memory |
-| REG | 90 | Registry key modifications |
-| API | 63 | NtProtectVirtualMemory, CryptEncrypt |
-| SYSTEM | 38 | Loaded DLLs |
-| DROP | 23 | Dropped file extensions |
-| SIGNATURE | 20 | allocates_rwx, injection_runpe |
-| FILE | 16 | File system operations |
-| DIRECTORY | 10 | Directory operations |
+**File Guard** — Before any suspicious process writes to a protected file (`.docx`, `.pdf`, `.jpg`, etc.), a backup is saved automatically. If ransomware is confirmed, all affected files are restored instantly.
 
----
-
-## Key Features
-
-### File Guard — Copy-on-Write + Rollback
-Before any suspicious process modifies a file, a backup copy is saved automatically. If ransomware is confirmed, all affected files are instantly restored to their original state.
-
-### AI Decompiler
-After detection, the malicious executable is automatically analyzed. The system extracts suspicious API imports, disassembles the entry point, and generates a forensic report explaining the encryption algorithm used.
-
-Requires `ANTHROPIC_API_KEY` for full AI analysis:
+**AI Decompiler** — After killing a process, the executable is analyzed automatically. Add your Anthropic API key for a full natural language report explaining what the malware does:
 ```cmd
 set ANTHROPIC_API_KEY=sk-ant-...
-py step5_main.py
-```
-
-### Zero-Day Detection
-Since detection is behavior-based rather than signature-based, RansomShield can detect unknown ransomware variants as long as they exhibit typical ransomware behavior patterns (mass file encryption, registry persistence, crypto API usage).
-
----
-
-## Top Detection Features (from trained model)
-
-```
-[RANSOM ▲]  STRING: "this program cannot be run in dos mode"  (+2.599)
-[RANSOM ▲]  API: LdrGetProcedureAddress                       (+1.707)
-[RANSOM ▲]  API: NtAllocateVirtualMemory                      (+1.338)
-[RANSOM ▲]  SIGNATURE: packer_entropy                         (+1.277)
-[RANSOM ▲]  SIGNATURE: allocates_rwx                          (+0.979)
-[SAFE   ▼]  API: CoUninitialize                               (-0.812)
-[SAFE   ▼]  SYSTEM: DLL_LOADED: uxtheme.dll                   (-0.744)
 ```
 
 ---
 
 ## Dataset
 
-MLRan dataset sourced from:
+This project is built on the MLRan dataset:
 
 ```
 Onwuegbuche, F. C., Olaoluwa, A., Jurcut, A. D., & Pasquale, L. (2025).
 MLRan: A Behavioural Dataset for Ransomware Analysis and Detection.
-arXiv preprint arXiv:2505.18613
+arXiv:2505.18613
 ```
 
-[github.com/faithfulco/mlran](https://github.com/faithfulco/mlran)
+→ [github.com/faithfulco/mlran](https://github.com/faithfulco/mlran)
 
 ---
 
 ## ⚠️ Disclaimer
 
-This project is intended for **research and educational purposes only**.  
-Do not run real ransomware samples outside of an isolated VM environment.  
+This project is for **research and educational purposes only**.
+Never run real ransomware samples outside an isolated VM environment.
 Always take a snapshot before testing.
